@@ -1,0 +1,56 @@
+.required {
+    font-weight:bold;
+}
+.queryparameter {
+    font-style: italic;
+}
+
+.definitions-table tr {
+    border: 1px solid lightgray;
+}
+.definitions-table tr td {
+    padding: 0px;
+}
+
+.parameters-list {
+    margin-bottom: .5em;
+}
+
+.definitions-table tr td.property-name {
+    padding-right: 4px;
+    border-right: 1px solid lightgray;
+}
+
+    .spinner-ph .spinner-border {
+        width: 1.4rem;
+        height: 1.4rem;
+        margin-top: 4px;
+        margin-left: 4px;
+        margin-right: 4px;
+    }
+.return-hdr {
+    margin-bottom:2px;
+}
+
+.controller-hdr {
+    background-color: aliceblue;
+    border-bottom: 1px solid blue;
+}
+.path-hdr {
+    
+}
+
+.parameters {
+    background-color: antiquewhite;
+}
+
+.parameters-hdr {
+    margin-bottom: 2px;
+}
+
+.returns {
+    margin-bottom:1em;
+}
+/*.definitions-table > tbody > td {
+    border: 1px solid lightgray;
+}*/
