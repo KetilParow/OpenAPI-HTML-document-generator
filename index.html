@@ -1,172 +1,57 @@
 ﻿<html lang="en-us">
-    <head>
-        <meta charset="UTF-8">
-        <script src="scripts/jquery.js"></script>
-        <script src="scripts/knockout.js"></script>
-        <script src="scripts/bootstrap-toggle.js"></script>
-        <script src="scripts/app.js"></script>
-        <link rel="stylesheet" type="text/css" href="content/bootstrap.css" />
-        <link rel="stylesheet" type="text/css" href="content/open-iconic-bootstrap.css" />
-        <link rel="stylesheet" type="text/css" href="content/bootstrap-toggle.css" />
-        <link rel="stylesheet" type="text/css" href="content/app.css" />
-        <title>OpenAPI Doc browser ©2019, Norconsult Informasjonssystemer</title>
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <script src="scripts/jquery.js"></script>
+    <script src="scripts/knockout.js"></script>
+    <script src="scripts/bootstrap.bundle.min.js"></script>
+    <script src="scripts/app.js"></script>
+    <link rel="stylesheet" type="text/css" href="content/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="content/open-iconic-bootstrap.css" />
+    <!--<link rel="stylesheet" type="text/css" href="content/bootstrap-modal.css" />-->
+    <!--<link rel="stylesheet" type="text/css" href="content/bootstrap-toggle.css" />-->
+    <link rel="stylesheet" type="text/css" href="content/app.css" />
+    <title>OpenAPI Doc browser ©2019, Norconsult Informasjonssystemer</title>
+</head>
 
-    <body>
-        <form>
-            <div class="form-group">
-                <div class="input-group input-group-sm mb-3">
-                    <div class="input-group-prepend">
-                        <span class="input-group-text" id="basic-addon1">OpenAPI URL</span>
-                    </div>
-                    <input type="text" class="form-control" id="api-url" value="http://localhost/DeBIP.Services.CoreAPI/swagger/docs/v1" />
-                    <div class="spinner-ph input-group-append">
-                        <div id="load-spinner" class="spinner-border text-primary" role="status" style="display:none">
-                            <span class="sr-only">Loading...</span>
-                        </div>
-                    </div>
-                    <div class="input-group-append">
-                        <button type="button" class="btn btn-sm btn-primary" id="download-btn"><span class="oi oi-data-transfer-download"></span></button>
-                    </div>
+<body>
+    <form>
+        <div class="form-group">
+            <div class="input-group input-group-sm mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text" id="basic-addon1">OpenAPI URL</span>
                 </div>
-            </div>
-        </form>
-
-        <div id="api-doc">
-            <h1>REST paths in <span data-bind="text:$data.info.title"></span></h1>
-            <div id="controllers" data-bind="foreach:Object.keys(controllers)">
-                <h3 data-bind="text:$data" class="controller-hdr"></h3>
-                <div class="paths" data-bind="foreach:Object.keys($root.controllers[$data])">
-                    <!--<span data-bind="text:$data"></span>-->
-                    <div class="methods" data-bind="foreach:Object.keys($root.controllers[$parent][$data])">
-                        <div class="method" data-bind="with: $root.controllers[$parents[1]][$parent][$data]">
-                            <h4 data-bind='text:$parents[1] + " (" + $parent + ")"' class="path-hdr"></h4>
-                            <p data-bind="text:$data.summary, visible:$data.summary" class="summary small"></p>
-                            <!--ko if: $data.parameters && $data.parameters.length-->
-                            <div class="parameters" data-bind="visible:$data.parameters.length">
-                                <h5 class="parameters-hdr">Input parameters<span data-bind='text:$data.parameters.length? " (" + $data.parameters.length + ")" : ""'></span>:</h5>
-                                <ul class="parameters-list" data-bind="foreach:$data.parameters">
-                                    <li>
-                                        <span data-bind='text:name, css: {required: required, queryparameter:$data.in==="query"}' class="param-name"></span>,
-                                        <!--ko if: $data["type"]-->
-                                        <span data-bind='text:type' class="param-type"></span>
-                                        <!--/ko-->
-                                        <!--ko if: !$data["type"]-->
-                                        <span class="param-type">Payload</span>
-                                        <!--/ko-->
-                                        <span data-bind='text: "(" + $data["format"] + ")", visible: $data["format"]' class="param-format"></span>
-                                        <!--ko if: $data["description"]-->
-                                        (<span data-bind='text:description' class="parameter-description"></span>)
-                                        <!--/ko-->
-                                    </li>
-                                </ul>
-                            </div>
-                            <!--/ko-->
-                            <!--ko if: $data["responses"] && $data["responses"]["200"] && $data["responses"]["200"]["schema"]-->
-                            <div class="returns" data-bind='with: $data.responses["200"].schema'>
-                                <h5 class="return-hdr">Returns:</h5>
-                                <!--ko if: $data["$ref"]-->
-                                <a data-bind='attr: {href: $data["$ref"]}, text:$data["$ref"].replace("#/definitions/","")'></a>
-                                <!--/ko-->
-                                <!--ko if: $data["type"] == "array" && $data["items"] && $data["items"]["$ref"] -->
-                                Array of <a data-bind='attr: {href: $data.items["$ref"]}, text: $data.items["$ref"].replace("#/definitions/","")'></a>
-                                <!--/ko-->
-                                <!--ko if: !$data["$ref"] && !($data["type"] == "array" && $data["items"] && $data["items"]["$ref"])-->
-                                <code data-bind='text: JSON.stringify($data)'></code>
-                                <!--/ko-->
-                            </div>
-                            <!--/ko-->
-                        </div>
-
-
-                    </div>
-                </div>
-            </div>
-            <h3>Type definitions</h3>
-            <div class="definitions">
-                <div data-bind="foreach: $root.GetTypeList()">
-                    <a data-bind='attr: {name: "/definitions/" + $data}'></a>
-                    <h4 data-bind="text:$data"></h4>
-                    <div class="typedefinition" data-bind="template: {name: 'definitions-table-template', data: $root.definitions[$data].properties}" ></div>
+                <input type="text" class="form-control" id="api-url" value="http://localhost/DeBIP.Services.CoreAPI/swagger/docs/v1" />
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-sm btn-primary" id="download-btn"><span class="oi oi-reload"></span></button>
                 </div>
             </div>
         </div>
 
-        <script type="text/html" id="definitions-table-template">
-            <table class="definitions-table">
-                <tbody data-bind="foreach: Object.keys($data)">
-                    <tr>
+    </form>
+    
+    <div class="loader-ph"><div class="loader" id="load-spinner" style="display:none"></div></div>
 
-                        <!--ko if: ($parent[$data]["items"] && $parent[$data]["items"]["$ref"]) || $parent[$data]["$ref"]-->
-                        <td class="property-name"><a data-bind='text:$data + ($parent[$data].type =="array"? " (array)" : ""), attr: {href: $parent[$data]["$ref"] || $parent[$data]["items"]["$ref"]}'></a></td>
-                            <!--/ko-->
-                        <!--ko ifnot: ($parent[$data]["items"] && $parent[$data]["items"]["$ref"]) || $parent[$data]["$ref"]-->
-                            <td class="property-name" data-bind='text:$data + ($parent[$data].type =="array"? " (array)" : "") '></td>
-                        <!--/ko-->
-                        
-                        <!--ko if: $parent[$data].type == "array"-->
-                        <!--ko if: $parent[$data].items["$ref"]-->
-                        <td class="subtype">
-                            <!--ko template: {name: "definitions-table-template", data: $root.definitions[$parent[$data].items["$ref"].replace("#/definitions/","")].properties} -->
-                            <!--/ko-->
-                        </td>
-                        <!--/ko-->
-                        <!--ko ifnot: $parent[$data].items["$ref"]-->
-                        <td data-bind='text: $parent[$data].items.type'></td>
-                        <!--/ko-->
-                        <!--/ko-->
-                        <!--ko ifnot: $parent[$data].type == "array"-->
-                        <!--ko if: $parent[$data]["$ref"]-->
-                        <td class="subtype">
-                            <!--ko template: {name: "definitions-table-template", data: $root.definitions[$parent[$data]["$ref"].replace("#/definitions/","")].properties} -->
-                            <!--/ko-->
-                        </td>
-                        <!--/ko-->
-                        <!--ko ifnot: $parent[$data]["$ref"]-->
-                        <td data-bind='text: $parent[$data].type'></td>
-                        <!--/ko-->
-                        <!--/ko-->
-                    </tr>
-
-                </tbody>
-            </table>
-        </script>
-
-            <script type="text/html" id="project-template">
-                <h2 data-bind="text:customer"></h2>
-                <!-- <div data-bind="foreach:projects"> -->
-                <div class="project-data">
-                    <h3 data-bind="text:name"></h3>
-                    <!--ko foreach: descriptions-->
-                    <p data-bind="text:$data"></p>
-                    <!--/ko-->
+    <div class="modal fade" id="errormsg-modal" tabindex="-1" role="dialog" aria-labelledby="errormsgModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="errormsgModalLabel">Modal title</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
                 </div>
-                <div data-bind="foreach:consultants" class="consultants container-flow">
-                    <div class="row consultant-row">
-                        <div class="consultant-data col">
-                            <h4 data-bind="text: group + ': ' + name"></h4>
-                            <ul data-bind="foreach:qualifications">
-                                <li data-bind="text:$data"></li>
-                            </ul>
-                        </div>
-                        <div class="consultant-picture col" data-bind="visible: imagefile != null">
-                            <img data-bind="attr: {src: 'images/'+ imagefile, title: name}" onerror="arguments[0].currentTarget.style.display='none'" />
-                        </div>
-                    </div>
+                <div class="modal-body">
+                    ...
                 </div>
-                <!-- </div> -->
-            </script>
-
-            <div class="documentation">
-                <div class="who-what-where">
-                    <div class="container-fluid">
-                        <div id="project-prez">
-                            <div class="project" data-bind="attr: {id: 'p-' + $data.selectedProj()}, template: {name: 'project-template', data: $data[$data.selectedProj()]}"></div>
-                        </div>
-                    </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
                 </div>
             </div>
+        </div>
+    </div>
+    <div id="app">
 
-    </body>
+    </div>
+</body>
 </html>
 

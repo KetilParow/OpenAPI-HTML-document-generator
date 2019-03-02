@@ -1,0 +1,114 @@
+﻿<div id="api-doc">
+    <h1>REST paths in <span data-bind="text:$data.info.title"></span></h1>
+    <div id="controllers" data-bind="foreach:Object.keys(controllers)">
+        <div class="controller card">
+            <div class="card-header" data-bind = 'attr: {id : "heading" + $data}'>
+                <h3 class="controller-hdr">
+                    <button data-bind='text:$data, attr: {"data-target": "#collapse" + $data, "aria-controls": "collapse" + $data}' class="btn btn-link" type="button" data-toggle="collapse" aria-expanded="true"></button>
+                </h3>
+            </div>
+            <div class="paths collapse show" data-bind='foreach:Object.keys($root.controllers[$data]), attr: {id: "collapse" + $data, "aria-labelledby": "heading" + $data}'>                
+                <div class="path card-body" data-bind="foreach:Object.keys($root.controllers[$parent][$data])">
+                    <div class="method" data-bind='template: {name:"method-template", data: $root.controllers[$parents[1]][$parent][$data]}'></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h3 class="definitions-hdr" data-toggle="collapse" data-target="#definitions" aria-expanded="true" aria-controls="definitions">Type definitions</h3>
+    <div class="definitions collapse show" id="definitions" data-bind="foreach: $root.GetTypeList()">
+        <div class="card">
+            <a data-bind='attr: {name: "/definitions/" + $data}'></a>
+            <div class="card-header" data-bind='attr: {id: "typeheading" + $data.replace(/\./g,"")}'>
+                <h4 class="type-hdr">
+                    <button data-bind='text:$data, attr: {"data-target": "#collapse"+$data.replace(/\./g,""), "aria-controls": "collapse"+$data.replace(".","")}' class="btn btn-link" type="button" data-toggle="collapse" aria-expanded="true"></button>
+                </h4>
+            </div>
+            <div class="typedefinition collapse show" data-bind='attr: {id: "collapse" + $data.replace(/\./g,""), "aria-labelledby": "typeheading" + $data.replace(/\./g,"")}'>
+                <div class="card-body" data-bind='template: {name: "definitions-table-template", data: $root.definitions[$data].properties}'>
+                </div>
+            </div>
+        </div>        
+    </div>
+</div>
+<script type="text/html" id="method-template">
+    <h4 data-bind='text:$parents[1] + " (" + $parent + ")"' class="path-hdr"></h4>
+    <p data-bind="text:$data.summary, visible:$data.summary" class="summary small"></p>
+    
+    <div class="parameters-and-return-types">
+        <!--ko if: $data.parameters && $data.parameters.length-->
+        <div class="parameters" data-bind='visible:$data.parameters.length, template: {name:"parameters-template" ,data: $data.parameters}'></div>
+        <!--/ko-->
+        <!--ko if: $data["responses"] && $data["responses"]["200"] && $data["responses"]["200"]["schema"]-->
+        <div class="returns" data-bind='with: $data.responses["200"].schema'>
+            <h5 class="return-hdr">Returns:</h5>          
+            <!--ko if: $data["$ref"]-->
+            <a data-bind='attr: {href: $data["$ref"]}, text:$data["$ref"].replace("#/definitions/","")'></a>
+            <!--/ko-->
+            <!--ko if: $data["type"] == "array" && $data["items"] && $data["items"]["$ref"] -->
+            Array of <a data-bind='attr: {href: $data.items["$ref"]}, text: $data.items["$ref"].replace("#/definitions/","")'></a>
+            <!--/ko-->
+            <!--ko if: !$data["$ref"] && !($data["type"] == "array" && $data["items"] && $data["items"]["$ref"])-->
+            <code data-bind='text: JSON.stringify($data)'></code>
+            <!--/ko-->
+        </div>
+        <!--/ko-->
+    </div>
+</script>
+
+<script type="text/html" id="parameters-template">
+    <h5 class="parameters-hdr">Input parameters<span data-bind='text:$data.length? " (" + $data.length + ")" : ""'></span>:</h5>
+    <ul class="parameters-list" data-bind="foreach:$data">
+        <li>
+            <span data-bind='text:name, css: {required: required, queryparameter:$data.in==="query"}' class="param-name"></span>,
+            <!--ko if: $data["type"]-->
+            <span data-bind='text:type' class="param-type"></span>
+            <!--/ko-->
+            <!--ko if: !$data["type"]-->
+            <span class="param-type">Payload</span>
+            <!--/ko-->
+            <span data-bind='text: "(" + $data["format"] + ")", visible: $data["format"]' class="param-format"></span>
+            <!--ko if: $data["description"]-->
+            (<span data-bind='text:description' class="parameter-description"></span>)
+            <!--/ko-->
+        </li>
+    </ul>
+</script>
+
+<script type="text/html" id="definitions-table-template">
+    <table class="definitions-table">
+        <tbody data-bind="foreach: Object.keys($data)">
+            <tr>
+
+                <!--ko if: ($parent[$data]["items"] && $parent[$data]["items"]["$ref"]) || $parent[$data]["$ref"]-->
+                <td class="property-name"><a data-bind='text:$data + ($parent[$data].type =="array"? " (array)" : ""), attr: {href: $parent[$data]["$ref"] || $parent[$data]["items"]["$ref"]}'></a></td>
+                <!--/ko-->
+                <!--ko ifnot: ($parent[$data]["items"] && $parent[$data]["items"]["$ref"]) || $parent[$data]["$ref"]-->
+                <td class="property-name" data-bind='text:$data + ($parent[$data].type =="array"? " (array)" : "") '></td>
+                <!--/ko-->
+                <!--ko if: $parent[$data].type == "array"-->
+                <!--ko if: $parent[$data].items["$ref"]-->
+                <td class="subtype">
+                    <!--ko template: {name: "definitions-table-template", data: $root.definitions[$parent[$data].items["$ref"].replace("#/definitions/","")].properties} -->
+                    <!--/ko-->
+                </td>
+                <!--/ko-->
+                <!--ko ifnot: $parent[$data].items["$ref"]-->
+                <td data-bind='text: $parent[$data].items.type'></td>
+                <!--/ko-->
+                <!--/ko-->
+                <!--ko ifnot: $parent[$data].type == "array"-->
+                <!--ko if: $parent[$data]["$ref"]-->
+                <td class="subtype">
+                    <!--ko template: {name: "definitions-table-template", data: $root.definitions[$parent[$data]["$ref"].replace("#/definitions/","")].properties} -->
+                    <!--/ko-->
+                </td>
+                <!--/ko-->
+                <!--ko ifnot: $parent[$data]["$ref"]-->
+                <td data-bind='text: $parent[$data].type'></td>
+                <!--/ko-->
+                <!--/ko-->
+            </tr>
+
+        </tbody>
+    </table>
+</script>

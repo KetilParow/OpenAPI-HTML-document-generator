@@ -12,45 +12,85 @@
     padding: 0px;
 }
 
-.parameters-list {
+/*.parameters-list {
     margin-bottom: .5em;
-}
+}*/
 
 .definitions-table tr td.property-name {
     padding-right: 4px;
     border-right: 1px solid lightgray;
 }
 
-    .spinner-ph .spinner-border {
-        width: 1.4rem;
-        height: 1.4rem;
-        margin-top: 4px;
-        margin-left: 4px;
-        margin-right: 4px;
-    }
 .return-hdr {
     margin-bottom:2px;
 }
 
-.controller-hdr {
+/*.controller-hdr {
     background-color: aliceblue;
     border-bottom: 1px solid blue;
+    margin-top: 1em;
+}*/
+
+.controller-hdr .btn-link {
+    font-size: inherit;
 }
+
+.card-header {
+    padding-bottom: 0;
+    padding-top: 0;
+}
+
+
+.paths .path.card-body {
+padding-top:0;padding-bottom:0.5rem;
+}
+
 .path-hdr {
     
 }
-
-.parameters {
-    background-color: antiquewhite;
+.loader-ph {
+    text-align: center;
+    /*position: relative;*/
 }
 
+    .loader-ph > .loader {
+        border: 6px solid #e9ecef;
+        border-top: 6px solid #0062cc;
+        border-radius: 50%;
+        width: 2.5rem;
+        height: 2.5rem;
+        animation: spin 2s linear infinite;
+        display: inline-block;
+    }
+
+.definitions-hdr.collapsed {
+    color: #e9ecef;
+}
+
+.typedefinition > .card-body > table {
+    margin-left:12px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+.parameters-and-return-types {
+    background-color: antiquewhite;
+}
 .parameters-hdr {
     margin-bottom: 2px;
 }
 
 .returns {
-    margin-bottom:1em;
+    margin-bottom: 1em;
 }
+
 /*.definitions-table > tbody > td {
     border: 1px solid lightgray;
 }*/

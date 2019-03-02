@@ -46,24 +46,31 @@ $(function () {
     }
 
     function loadData() {
-        $("#api-doc").hide();
         $("#load-spinner").show();
+        $("#api-doc").empty();
         $.getJSON($("#api-url").val(), null,
+
             function (data, textStatus, jqXHR) {
-                let isBound = model && model.isBound;
                 model = data;
-                model.isBound = isBound;
                 if (model && model.paths) {
-                    processModel();
-                    if (!model.isBound) {
-                        ko.applyBindings(model, $("#api-doc")[0]);
-                    }
-                    model.isBound = true;
-                    $("#api-doc").show();
-                    $("#load-spinner").hide();
+                    $("#app").load(window.location.origin + window.location.pathname + "views/app.html",
+                        function (jqXHR, textStatus, errorThrown) {
+                            processModel();
+                            ko.applyBindings(model, $("#api-doc")[0]);
+                            model.isBound = true;
+                            $("#api-doc").show();
+                        });
                 }
             }
-        );
+        ).always(function () {
+            $("#load-spinner").hide();
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                let $m = $("#errormsg-modal");
+                $m.find("#errormsgModalLabel").html("Error: " + (textStatus.toLocaleLowerCase() != "error" ? textStatus + " " : "") + errorThrown);
+                $m.find(".modal-body").html("<code>" + jqXHR.responseText + "</code>");
+                $m.modal();
+
+            });
     }
 
     $("#download-btn").on("click", function () {
