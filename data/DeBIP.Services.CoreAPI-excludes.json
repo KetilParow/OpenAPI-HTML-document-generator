@@ -1,0 +1,5 @@
+{
+	"path": [ "Ping" ],
+	"controller" : [ "Morten" ],
+	"type": [ "banqsoft.com.schemas.services.v2", "DeBIP.Services.Common.DiagnosisResult" ]
+}

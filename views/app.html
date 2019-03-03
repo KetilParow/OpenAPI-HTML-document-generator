@@ -42,16 +42,14 @@
         <!--ko if: $data.hasReturnSchema()-->
         <div class="returns">
             <h5 class="return-hdr">Returns:</h5>
- 
+
             <!--ko if: $data.isArray()-->
             Array of
             <!--/ko -->
-
             <!--ko if: $data.typeReference()-->
             <a data-bind='attr: {href: typeReference()}, text:typeReference().replace("#/definitions/","")'></a>
             <!--/ko-->
-
-            <!--ko if: $data.typeDescr()-->
+            <!--ko if: !$data.typeReference() && $data.typeDescr()-->
             <code>
                 <!--ko text: $data.typeDescr()--><!--/ko-->
             </code>

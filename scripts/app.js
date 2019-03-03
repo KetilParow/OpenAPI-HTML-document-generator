@@ -1,11 +1,11 @@
 $(function () {
     let model = null;
+    let excludes = { "controller": [], "path": [], "type": [], };
     $("#api-doc").hide();
+    
     function prepareModel() {
         if (!model) { return; }
-        var excludeControllers = ["Morten"];
-        var excludePathNames = ["Ping"];
-        var excludeTypeNamespaces = ["banqsoft.com.schemas.services.v2","DeBIP.Services.Common.DiagnosisResult"];
+        
         var addDefaultSchemaHelpers = function (object) {
             object.typeReference = function () {
                 return null;
@@ -54,40 +54,43 @@ $(function () {
             }
         }
 
-        model.controllers = {};
-        
-        Object.keys(model.paths).forEach(function (key) {
-            let path = model.paths[key];
-            Object.keys(path).forEach(function (methodName) {
-                let method = path[methodName];
-                let controller = method.tags[0];
+        var buildControllersLevel = function () {
+            model.controllers = {};
 
-                if (excludeControllers.find(function (e) { return e == controller })) {
-                    return;
-                }
+            Object.keys(model.paths).forEach(function (key) {
+                let path = model.paths[key];
+                Object.keys(path).forEach(function (methodName) {
+                    let method = path[methodName];
+                    let controller = method.tags[0];
 
-                if (excludePathNames.find(function (p) { return controller + "_" + p == method.operationId; })) {
-                    return;
-                }
+                    if (excludes["controller"].find(function (e) { return e == controller })) {
+                        return;
+                    }
 
-                AddSchemaHelpers(method);
+                    if (excludes["path"].find(function (p) { return controller + "_" + p == method.operationId; })) {
+                        return;
+                    }
 
-                if (!model.controllers[controller]) {
-                    model.controllers[controller] = {};
-                }
+                    AddSchemaHelpers(method);
 
-                if (model.controllers[controller][key]) {
-                    return;
-                }
+                    if (!model.controllers[controller]) {
+                        model.controllers[controller] = {};
+                    }
 
-                model.controllers[controller][key] = path;
-                
+                    if (model.controllers[controller][key]) {
+                        return;
+                    }
+
+                    model.controllers[controller][key] = path;
+                });
             });
-            
+        }
+
+        var buildTypeList = function () {
             model.GetTypeList = function () {
                 var allTypes = Object.keys(model.definitions);
                 return allTypes.filter(function (e) {
-                    if (excludeTypeNamespaces.find(function (n) { return e.startsWith(n); }))
+                    if (excludes["type"].find(function (n) { return e.startsWith(n); }))
                         return false;
                     var definition = model.definitions[e];
                     for (let propName in definition.properties) {
@@ -108,43 +111,51 @@ $(function () {
                                 extraDescr = extraDescr + "(" + prop.format + ")";
                             }
                             prop.extraDescr = extraDescr;
-                            prop.typeDescr = function() { return prop["type"]; };
+                            prop.typeDescr = function () { return prop["type"]; };
                         }
                     }
                     return true;
-                })
-            }
-            
-        }); 
+                });
+            };
+        };
+        buildControllersLevel();
+        buildTypeList();
     }
 
     function loadData() {
         $("#load-spinner").show();
         $("#api-doc").empty();
-        $.getJSON($("#api-url").val(), null,
 
-            function (data, textStatus, jqXHR) {
-                model = data;
-                if (model && model.paths) {
-                    $("#app").load(window.location.origin + window.location.pathname + "views/app.html",
-                        function (jqXHR, textStatus, errorThrown) {
-                            prepareModel();
-                            ko.applyBindings(model, $("#api-doc")[0]);
-                            model.isBound = true;
-                            $("#api-doc").show();
-                        });
+        function appHtmlSuccessfullyLoaded() {
+            $.getJSON(window.location.origin + window.location.pathname + "data/" + model.info.title + "-excludes.json", null,
+                function (data, textStatus, jqXHR) {
+                    excludes = data;
                 }
-            }
-        ).always(function () {
-            $("#load-spinner").hide();
-            }).fail(function (jqXHR, textStatus, errorThrown) {
-                let $m = $("#errormsg-modal");
-                $m.find("#errormsgModalLabel").html("Error: " + (textStatus.toLocaleLowerCase() != "error" ? textStatus + " " : "") + errorThrown);
-                $m.find(".modal-body").html("<code>" + jqXHR.responseText + "</code>");
-                $m.modal();
-
+            ).always(function () {
+                prepareModel();
+                ko.applyBindings(model, $("#api-doc")[0]);
+                $("#api-doc").show();
             });
-    }
+            
+        }
+
+        function jsonDocSuccessfullyLoaded(data, textStatus, jqXHR) {
+            model = data;
+            if (model && model.paths) {
+                $("#app").load(window.location.origin + window.location.pathname + "views/app.html", appHtmlSuccessfullyLoaded);
+            }
+        }
+ 
+        $.getJSON($("#api-url").val(), null, jsonDocSuccessfullyLoaded)
+            .always(function () {
+                $("#load-spinner").hide();
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    let $m = $("#errormsg-modal");
+                    $m.find("#errormsgModalLabel").html("Error: " + (textStatus.toLocaleLowerCase() != "error" ? textStatus + " " : "") + errorThrown);
+                    $m.find(".modal-body").html("<code>" + jqXHR.responseText + "</code>");
+                    $m.modal();
+                });
+        }
 
     $("#download-btn").on("click", function () {
         if ($("#api-url").val()) {
