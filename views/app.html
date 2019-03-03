@@ -30,6 +30,7 @@
         </div>        
     </div>
 </div>
+
 <script type="text/html" id="method-template">
     <h4 data-bind='text:$parents[1] + " (" + $parent + ")"' class="path-hdr"></h4>
     <p data-bind="text:$data.summary, visible:$data.summary" class="summary small"></p>
@@ -38,17 +39,22 @@
         <!--ko if: $data.parameters && $data.parameters.length-->
         <div class="parameters" data-bind='visible:$data.parameters.length, template: {name:"parameters-template" ,data: $data.parameters}'></div>
         <!--/ko-->
-        <!--ko if: $data["responses"] && $data["responses"]["200"] && $data["responses"]["200"]["schema"]-->
-        <div class="returns" data-bind='with: $data.responses["200"].schema'>
-            <h5 class="return-hdr">Returns:</h5>          
-            <!--ko if: $data["$ref"]-->
-            <a data-bind='attr: {href: $data["$ref"]}, text:$data["$ref"].replace("#/definitions/","")'></a>
+        <!--ko if: $data.hasReturnSchema()-->
+        <div class="returns">
+            <h5 class="return-hdr">Returns:</h5>
+ 
+            <!--ko if: $data.isArray()-->
+            Array of
+            <!--/ko -->
+
+            <!--ko if: $data.typeReference()-->
+            <a data-bind='attr: {href: typeReference()}, text:typeReference().replace("#/definitions/","")'></a>
             <!--/ko-->
-            <!--ko if: $data["type"] == "array" && $data["items"] && $data["items"]["$ref"] -->
-            Array of <a data-bind='attr: {href: $data.items["$ref"]}, text: $data.items["$ref"].replace("#/definitions/","")'></a>
-            <!--/ko-->
-            <!--ko if: !$data["$ref"] && !($data["type"] == "array" && $data["items"] && $data["items"]["$ref"])-->
-            <code data-bind='text: JSON.stringify($data)'></code>
+
+            <!--ko if: $data.typeDescr()-->
+            <code>
+                <!--ko text: $data.typeDescr()--><!--/ko-->
+            </code>
             <!--/ko-->
         </div>
         <!--/ko-->
@@ -77,38 +83,28 @@
 <script type="text/html" id="definitions-table-template">
     <table class="definitions-table">
         <tbody data-bind="foreach: Object.keys($data)">
-            <tr>
-
-                <!--ko if: ($parent[$data]["items"] && $parent[$data]["items"]["$ref"]) || $parent[$data]["$ref"]-->
-                <td class="property-name"><a data-bind='text:$data + ($parent[$data].type =="array"? " (array)" : ""), attr: {href: $parent[$data]["$ref"] || $parent[$data]["items"]["$ref"]}'></a></td>
-                <!--/ko-->
-                <!--ko ifnot: ($parent[$data]["items"] && $parent[$data]["items"]["$ref"]) || $parent[$data]["$ref"]-->
-                <td class="property-name" data-bind='text:$data + ($parent[$data].type =="array"? " (array)" : "") '></td>
-                <!--/ko-->
-                <!--ko if: $parent[$data].type == "array"-->
-                <!--ko if: $parent[$data].items["$ref"]-->
-                <td class="subtype">
-                    <!--ko template: {name: "definitions-table-template", data: $root.definitions[$parent[$data].items["$ref"].replace("#/definitions/","")].properties} -->
-                    <!--/ko-->
-                </td>
-                <!--/ko-->
-                <!--ko ifnot: $parent[$data].items["$ref"]-->
-                <td data-bind='text: $parent[$data].items.type'></td>
-                <!--/ko-->
-                <!--/ko-->
-                <!--ko ifnot: $parent[$data].type == "array"-->
-                <!--ko if: $parent[$data]["$ref"]-->
-                <td class="subtype">
-                    <!--ko template: {name: "definitions-table-template", data: $root.definitions[$parent[$data]["$ref"].replace("#/definitions/","")].properties} -->
-                    <!--/ko-->
-                </td>
-                <!--/ko-->
-                <!--ko ifnot: $parent[$data]["$ref"]-->
-                <td data-bind='text: $parent[$data].type'></td>
-                <!--/ko-->
-                <!--/ko-->
+            <tr data-bind='template: {name: "definitions-table-row-template", data: $parent[$data]}'>                
             </tr>
 
         </tbody>
     </table>
+</script>
+<script type="text/html" id="definitions-table-row-template">
+    <td class="property-name">
+        <!--ko if: $data.typeReference()-->
+        <a data-bind='text:$data.name + ($data.isArray()? " (array)" : ""), attr: {href: $data.typeReference()}'></a>
+        <!--/ko-->
+        <!--ko ifnot: $data.typeReference()-->
+        <span data-bind='text:$data.name + ($data.isArray()? " (array)" : "")'></span>
+        <!--/ko-->
+    </td>
+    <td data-bind='{css: $data.typeReference()? "subtype": ""}'>
+        <!--ko if: $data.typeReference()-->
+        <!--ko template: {name: "definitions-table-template", data: $root.definitions[$data.typeReference().replace("#/definitions/","")].properties} -->
+        <!--/ko-->
+        <!--/ko-->
+        <!--ko ifnot: $data.typeReference()-->
+        <span class="typedescr" data-bind='text:$data.typeDescr()'></span> <span class="type-extra-descr" data-bind='text:$data.extraDescr'></span>
+        <!--/ko-->
+    </td>  
 </script>
