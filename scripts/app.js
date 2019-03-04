@@ -1,3 +1,25 @@
+//For those who still think they need IE:
+//IE fixing...
+if (!Array.find) {
+    Array.prototype.find = function (delegate) {
+        for (let i = 0; i < this.length; i++) {
+            let e = this[i];
+            if (delegate(e)) {
+                return e;
+            }
+        }
+        return null;
+    };
+}
+if (!String.startsWith) {
+    String.prototype.startsWith = function (s) {
+        return this.indexOf(s) == 0;
+    };
+}
+//------------------
+// /IE fixing...
+//-------------------
+
 $(function () {
     let model = null;
     let excludes = { "controller": [], "path": [], "type": [], };
