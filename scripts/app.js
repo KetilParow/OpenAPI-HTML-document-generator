@@ -16,9 +16,25 @@ if (!String.startsWith) {
         return this.indexOf(s) == 0;
     };
 }
+
 //------------------
 // /IE fixing...
 //-------------------
+
+//------------------
+//Utils
+
+if (!Location.appRoot) {
+    Location.prototype.appRoot = function () {
+        let arr = this.pathname.split("/");
+        arr[arr.length - 1] = "";
+        return this.origin + arr.join("/");
+    }
+}
+
+// /Utils
+//------------------
+
 
 $(function () {
     let model = null;
@@ -149,8 +165,8 @@ $(function () {
         $("#api-doc").empty();
 
         function appHtmlSuccessfullyLoaded() {
-            $.getJSON(window.location.origin + window.location.pathname + "data/" + model.info.title + "-excludes.json", null,
-                function (data, textStatus, jqXHR) {
+            $.getJSON(window.location.appRoot() + "data/" + model.info.title + "-excludes.json", null,
+                function (data) {
                     excludes = data;
                 }
             ).always(function () {
@@ -161,10 +177,10 @@ $(function () {
             
         }
 
-        function jsonDocSuccessfullyLoaded(data, textStatus, jqXHR) {
+        function jsonDocSuccessfullyLoaded(data) {
             model = data;
             if (model && model.paths) {
-                $("#app").load(window.location.origin + window.location.pathname + "views/app.html", appHtmlSuccessfullyLoaded);
+                $("#app").load(window.location.appRoot() + "views/app.html", appHtmlSuccessfullyLoaded);
             }
         }
  
@@ -185,5 +201,20 @@ $(function () {
         }
     });
 
-    $("#download-btn").click();
+    $("#api-url").on("change", function () {
+        if (!$(this).val()) {
+            $("#download-btn").prop("disabled", "disabled");
+        }
+        else {
+            $("#download-btn").prop("disabled", false);
+        }
+        
+    });
+
+    $.getJSON(window.location.appRoot() + "data/config.json", null,
+        function (data) {
+            $("#api-url").val(data.defaultUrl);
+            $("#api-url").change();
+            $("#download-btn").click();
+        });
 });
