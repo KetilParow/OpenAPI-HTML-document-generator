@@ -15,7 +15,7 @@
         </div>
     </div>
     <h3 class="definitions-hdr" data-toggle="collapse" data-target="#definitions" aria-expanded="true" aria-controls="definitions">Type definitions</h3>
-    <div class="definitions collapse show" id="definitions" data-bind="foreach: $root.GetTypeList()">
+    <div class="definitions collapse show" id="definitions" data-bind="foreach: $root.typeList">
         <div class="card">
             <a data-bind='attr: {name: "/definitions/" + $data}'></a>
             <div class="card-header" data-bind='attr: {id: "typeheading" + $data.replace(/\./g,"")}'>
@@ -81,28 +81,29 @@
 <script type="text/html" id="definitions-table-template">
     <table class="definitions-table">
         <tbody data-bind="foreach: Object.keys($data)">
-            <tr data-bind='template: {name: "definitions-table-row-template", data: $parent[$data]}'>                
+            <tr>
+                <!-- ko template: {name: "definitions-table-row-template", data: $parent[$data]} -->
+                <!--/ko-->
             </tr>
-
         </tbody>
     </table>
 </script>
 <script type="text/html" id="definitions-table-row-template">
     <td class="property-name">
-        <!--ko if: $data.typeReference()-->
+        <!--ko if: $data.typeReference() && $root.typeRefIsInTypelist($data.typeReference())-->
         <a data-bind='text:$data.name + ($data.isArray()? " (array)" : ""), attr: {href: $data.typeReference()}'></a>
         <!--/ko-->
-        <!--ko ifnot: $data.typeReference()-->
+        <!--ko ifnot: $data.typeReference() && $root.typeRefIsInTypelist($data.typeReference())-->
         <span data-bind='text:$data.name + ($data.isArray()? " (array)" : "")'></span>
         <!--/ko-->
     </td>
     <td data-bind='{css: $data.typeReference()? "subtype": ""}'>
         <!--ko if: $data.typeReference()-->
-        <!--ko template: {name: "definitions-table-template", data: $root.definitions[$data.typeReference().replace("#/definitions/","")].properties} -->
-        <!--/ko-->
+            <!--ko template: {name: "definitions-table-template", data: $root.definitions[$data.typeReference().replace("#/definitions/","")].properties} -->
+            <!--/ko-->
         <!--/ko-->
         <!--ko ifnot: $data.typeReference()-->
-        <span class="typedescr" data-bind='text:$data.typeDescr()'></span> <span class="type-extra-descr" data-bind='text:$data.extraDescr'></span>
+            <span class="typedescr" data-bind='text:$data.typeDescr()'></span> <span class="type-extra-descr" data-bind='text:$data.extraDescr'></span>
         <!--/ko-->
     </td>  
 </script>

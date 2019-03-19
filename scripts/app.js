@@ -39,6 +39,7 @@ if (!Location.appRoot) {
 $(function () {
     let model = null;
     let excludes = { "controller": [], "path": [], "type": [], };
+
     $("#api-doc").hide();
     
     function prepareModel() {
@@ -65,7 +66,10 @@ $(function () {
                 }
             }
             if (schema["$ref"] || schema["items"] && schema["items"]["$ref"]) {
-                pObject.typeReference = function () {
+                if (pObject != schema) {
+                    model.referencedTypes.push((schema["$ref"] || schema["items"]["$ref"]).replace("#/definitions/", ""));
+                }
+                pObject.typeReference = function () {                    
                     return (schema["$ref"] || schema["items"]["$ref"]);
                 }
             }
@@ -94,7 +98,7 @@ $(function () {
 
         var buildControllersLevel = function () {
             model.controllers = {};
-
+            model.referencedTypes = [];
             Object.keys(model.paths).forEach(function (key) {
                 let path = model.paths[key];
                 Object.keys(path).forEach(function (methodName) {
@@ -118,46 +122,69 @@ $(function () {
                     if (model.controllers[controller][key]) {
                         return;
                     }
-
                     model.controllers[controller][key] = path;
                 });
             });
         }
 
-        var buildTypeList = function () {
-            model.GetTypeList = function () {
-                var allTypes = Object.keys(model.definitions);
-                return allTypes.filter(function (e) {
-                    if (excludes["type"].find(function (n) { return e.startsWith(n); }))
-                        return false;
-                    var definition = model.definitions[e];
-                    for (let propName in definition.properties) {
-                        let prop = definition.properties[propName];
-                        prop.extraDescr = function () {
-                            return "";
-                        }
-                        prop.name = propName;
-
-                        addDefaultSchemaHelpers(prop);
-                        overrideSchemaHelpers(prop);
-                        if (!prop.typeReference()) {
-                            var extraDescr = "";
-                            if (prop["enum"]) {
-                                extraDescr = extraDescr + "(enum: [" + prop["enum"].toString() + "])";
-                            }
-                            if (prop["format"]) {
-                                extraDescr = extraDescr + "(" + prop.format + ")";
-                            }
-                            prop.extraDescr = extraDescr;
-                            prop.typeDescr = function () { return prop["type"]; };
-                        }
+        function LoopThthroPropertiesOfDefinition(definition) {
+            for (let propName in definition.properties) {
+                let prop = definition.properties[propName];
+                prop.extraDescr = function () {
+                    return "";
+                };
+                prop.name = propName;
+                addDefaultSchemaHelpers(prop);
+                overrideSchemaHelpers(prop);
+                if (!prop.typeReference()) {
+                    var extraDescr = "";
+                    if (prop["enum"]) {
+                        extraDescr = extraDescr + "(enum: [" + prop["enum"].toString() + "])";
                     }
-                    return true;
-                });
+                    if (prop["format"]) {
+                        extraDescr = extraDescr + "(" + prop.format + ")";
+                    }
+                    prop.extraDescr = extraDescr;
+                    prop.typeDescr = function () { return prop["type"]; };
+                }
+                else {
+                    var refTypename = prop.typeReference().replace("#/definitions/", "");
+                    if (!model.definitionIsReferenced(refTypename)) {
+                        var refType = model.definitions[refTypename];
+                        if (refType.name) {
+                            continue;
+                        }
+                        LoopThthroPropertiesOfDefinition(refType);
+                        refType.name = refTypename;
+                    }
+                }
+            }
+        }
+
+        function buildTypeList() {
+            model.definitionIsReferenced = function (name) {
+                return model.referencedTypes.indexOf(name) >= 0;
             };
+
+            let allTypes = Object.keys(model.definitions);
+            model.typeList = allTypes.filter(function (e) {
+                if (excludes["type"].find(function (n) { return e === n; }) ||
+                    (!model.definitionIsReferenced(e) && excludes["type"].find(function (n) { return e.startsWith(n); })))
+                    return false;
+                var definition = model.definitions[e];
+                if (!definition.name) {
+                    LoopThthroPropertiesOfDefinition(definition);
+                    definition.name = e; //convenience, and  marker for processed.
+                }
+                return true;
+            });
+            model.typeRefIsInTypelist = function (typeName) {
+                return model.typeList.indexOf(typeName.replace("#/definitions/", "")) >= 0;
+            };
+                
         };
         buildControllersLevel();
-        buildTypeList();
+        buildTypeList();        
     }
 
     function loadData() {
