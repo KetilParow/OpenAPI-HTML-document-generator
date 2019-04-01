@@ -19,23 +19,24 @@ Required parameters will be in bold font, query parameters will be in italics.
 [Array of] _Link to type definition when applicable_, OR _the actual json description_, e.g. ```{"type": "boolean"}```
 ### Type definitions
 #### Type name
- |
-- | -
-Property name, e.g. AccountID | Property type, e.g. number [(format descriptor, e.g. double)]
+
+<span></span>|<span></span>
+----|-----
+Property name, e.g. AccountID&nbsp;|Property type, e.g. number [(format descriptor, e.g. double)]
 
 # Example:
 ## Account
 ### /accounts/\{name\}/movements (get)
 #### Input parameters (3):
-• __name__,  string     
-• from,  string   (date-time)  
-• to,  string   (date-time)  
+* __name__,  string     
+* from,  string   (date-time)  
+* to,  string   (date-time)  
 #### Returns:
 Array of [DeBIP.Services.CoreAPI.Contract.Agreement.AccountMovement]()
 ## Type definitions
 ### DeBIP.Services.CoreAPI.Contract.Agreement.AccountMovement 
- |
-- | -
+<span></span>|<span></span> 
+----|----
 PosAmount | number (double)
 NegAmount | number (double)
 TransactionBookDate |string (date-time)
@@ -54,11 +55,12 @@ You may specify an exclusion list in the file: 'data/\{titleofservice\}-excludes
 ```{ "controller": ["Test"], "path": ["PingMe"], "type": ["Integration.TestClasses"], }```, where all the arrays should contain strings. Please note that the "type" exclusion implements "typename.startsWith()", to all for exclusion of entire namespaces.
 In the example, the controller "Test" / "TestController" will be omitted, the method name "PingMe" in all controllers will be omitted, and all types with names starting with "Integration.TestClasses" will be omitted.
 
-__DISCLAIMER:__ This software was written out of necessity. A customer insisted on being able to PRINT the documentation, although they have access to the swagger UI, which delivers the same documentation in even more detail, but does not lend itself to paper production in a straightforward way.
-As such, only the bare minimum of what was needed has been implemented in this version. 
-There may well be features / varities of the Open API model that are not supported, and this may cause parsing/binding errors.
-
 # Printing / saving as PDF
 All browsers seem to handle this differently, and some not at all. Edge and IE lacks "Save as PDF", but is able to "Print" to installed drivers, so drivers like "cutePDF", "Microsoft Print to PDF", and "PDF Creator" will work.
-Chrome's "Save as PDF" works much better. HIt "print", "Save as PDF", an you get a PDF document with working links.
+Chrome's "Save as PDF" works much better. Hit "print", "Save as PDF", and you should get a PDF document with working links.
 
+You may also have to fiddle with the 'page-break-before' settings in the print media query of app.css. Defaults should work well in Chrome, but some browsers seem to ignore these settings, or not support them properly.
+
+__DISCLAIMER:__ This software was written out of necessity. A customer insisted on being able to PRINT the documentation, even though they have access to the swagger UI, which delivers the same documentation in even more detail, but does not lend itself to paper production in a straightforward way.
+As such, only the bare minimum of what was needed has been implemented in this version. 
+There may well be features / varities of the Open API spec that are not supported, and this may cause parsing/binding errors. Don't call me. Fix the problem, and create a pull request! Please.

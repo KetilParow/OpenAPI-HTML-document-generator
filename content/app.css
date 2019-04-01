@@ -9,9 +9,15 @@
     border-collapse: collapse;
 }
 
-.definitions-table tr, .definitions-table td {
+.definitions-table tr, .definitions-table td, #help-modal .modal-body table tbody tr, #help-modal .modal-body table tbody tr td {
     border: 1px solid lightgray;
 }
+
+#help-modal .modal-body {
+    font-size:0.9rem;
+    word-spacing:2px;
+}
+
 .definitions-table tr td {
     padding: 0px;
 }
@@ -19,6 +25,15 @@
 .definitions-table tr td.property-name {
     padding-right: 4px;
     border-right: 1px solid lightgray;
+    word-break: keep-all;
+}
+
+.definitions-table tr td.property-description {
+    max-width: 400px;
+}
+
+#help-modal .modal-content {
+    overflow:hidden;
 }
 
 .subtype > .definitions-table {

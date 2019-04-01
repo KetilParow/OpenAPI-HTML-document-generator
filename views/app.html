@@ -97,7 +97,7 @@
         <span data-bind='text:$data.name + ($data.isArray()? " (array)" : "")'></span>
         <!--/ko-->
     </td>
-    <td data-bind='{css: $data.typeReference()? "subtype": ""}'>
+    <td class="property-description" data-bind='{css: $data.typeReference()? "subtype": ""}'>
         <!--ko if: $data.typeReference()-->
             <!--ko template: {name: "definitions-table-template", data: $root.definitions[$data.typeReference().replace("#/definitions/","")].properties} -->
             <!--/ko-->
