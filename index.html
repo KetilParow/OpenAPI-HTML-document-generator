@@ -25,10 +25,16 @@
                 </div>
                 <input type="text" class="form-control" id="api-url" value="" />
                 <div class="input-group-append">
-                    <button type="button" class="btn btn-sm btn-primary" id="download-btn"><span class="oi oi-reload"></span></button>
+                    <button type="button" class="btn btn-sm btn-primary" id="download-btn" title="Reload everything"><span class="oi oi-reload"></span></button>
                 </div>
                 <div class="input-group-append">
-                    <button type="button" class="btn btn-sm btn-secondary" id="help-btn"><span class="oi oi-question-mark"></span></button>
+                    <button type="button" class="btn btn-sm btn-secondary" id="collapse-btn" title="Collapse everything"><span class="oi oi-collapse-up"></span></button>
+                </div>
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-sm btn-secondary" id="expand-btn" title="Expand everything"><span class="oi oi-collapse-down"></span></button>
+                </div>
+                <div class="input-group-append">
+                    <button type="button" class="btn btn-sm btn-secondary" id="help-btn" title="Explen pls!"><span class="oi oi-question-mark"></span></button>
                 </div>
             </div>
         </div>
@@ -38,7 +44,7 @@
     <div class="loader-ph"><div class="loader" id="load-spinner" style="display:none"></div></div>
 
     <div class="modal fade" id="errormsg-modal" tabindex="-1" role="dialog" aria-labelledby="errormsgModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="errormsgModalLabel">Modal title</h5>

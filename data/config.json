@@ -1,3 +1,4 @@
 {
-  "defaultUrl": "http://localhost/DeBIP.Services.CoreAPI/swagger/docs/v1"
+  "defaultUrl": "http://localhost/DeBIP.Services.CoreAPI/swagger/docs/v1",
+  "initialCollapse":  true
 }

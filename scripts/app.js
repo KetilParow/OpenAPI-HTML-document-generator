@@ -39,8 +39,7 @@ if (!Location.appRoot) {
 $(function () {
     let model = null;
     let excludes = { "controller": [], "path": [], "type": [], };
-
-    $("#api-doc").hide();
+    let settings = {};
     
     function prepareModel() {
         if (!model) { return; }
@@ -74,8 +73,31 @@ $(function () {
                 }
             }
             else {
+                let extraDescr = "";
+                //Default the type descr to the raw json...
                 pObject.typeDescr = function () {
+                    if (schema["format"] === "binary" && schema["type"] === "file") {
+                        return "Binary stream (file attachment)";
+                    }
+                    if (schema["format"] && schema["type"]) {
+                        return schema.type + " (" + schema.format + ")";
+                    }
+                    if (schema["type"]) {
+                        return schema.type;
+                    }
                     return JSON.stringify(schema);
+                }
+
+                if (pObject["enum"]) {
+                    extraDescr = extraDescr + "(enum: [" + pObject["enum"].toString().replace(/,/g, ", ") + "])";
+                }
+                if (pObject["format"]) {
+                    extraDescr = extraDescr + "(" + pObject.format + ")";
+                }
+                pObject.extraDescr = extraDescr;
+                //if extraDescr describes the type adequately, set typeDescr to simple description
+                if (extraDescr) {
+                    pObject.typeDescr = function () { return pObject["type"]; };
                 }
             }
         }
@@ -83,17 +105,23 @@ $(function () {
         var AddSchemaHelpers = function (method) {
             addDefaultSchemaHelpers(method);
 
-            method.hasReturnSchema = function () {
+            method.has200Return = function () {
                 return false;
             }
             if (method.responses && method.responses["200"] && method.responses["200"].schema) {
-                method.hasReturnSchema = function () {
+                method.has200Return = function () {
                     return true;
                 }
                 let schema = method.responses["200"].schema;
                 overrideSchemaHelpers(method, schema);
-                
             }
+            if (!method.parameters || method.parameters.length == 0) {
+                return;
+            }
+            method.parameters.forEach(function (p) {
+                addDefaultSchemaHelpers(p);
+                overrideSchemaHelpers(p, p.schema);
+            });
         }
 
         var buildControllersLevel = function () {
@@ -136,16 +164,10 @@ $(function () {
                 prop.name = propName;
                 addDefaultSchemaHelpers(prop);
                 overrideSchemaHelpers(prop);
-                if (!prop.typeReference()) {
-                    var extraDescr = "";
-                    if (prop["enum"]) {
-                        extraDescr = extraDescr + "(enum: [" + prop["enum"].toString().replace(/,/g,", ") + "])";
-                    }
-                    if (prop["format"]) {
-                        extraDescr = extraDescr + "(" + prop.format + ")";
-                    }
-                    prop.extraDescr = extraDescr;
-                    prop.typeDescr = function () { return prop["type"]; };
+                if (!prop.typeReference()) { 
+                    prop.typeDescr = function () { //Want no json in property type descr.
+                        return prop["type"];
+                    }                    
                 }
                 else {
                     var refTypename = prop.typeReference().replace("#/definitions/", "");
@@ -199,6 +221,9 @@ $(function () {
             ).always(function () {
                 prepareModel();
                 ko.applyBindings(model, $("#api-doc")[0]);
+                if (settings.initialCollapse) {
+                    $("#collapse-btn").click();
+                }
                 $("#load-spinner").hide();
                 $("#api-doc").show();
             });
@@ -243,6 +268,14 @@ $(function () {
         });
     });
 
+    $("#expand-btn").on("click", function () {
+        $(".collapse").addClass("show");
+    });
+
+    $("#collapse-btn").on("click", function () {
+        $(".collapse").removeClass("show");
+    });
+
     $("#api-url").on("change", function () {
         if (!$(this).val()) {
             $("#download-btn").prop("disabled", "disabled");
@@ -255,7 +288,8 @@ $(function () {
 
     $.getJSON(window.location.appRoot() + "data/config.json", null,
         function (data) {
-            $("#api-url").val(data.defaultUrl);
+            settings = data;
+            $("#api-url").val(settings.defaultUrl);
             $("#api-url").change();
             $("#download-btn").click();
         });

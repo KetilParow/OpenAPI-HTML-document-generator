@@ -9,7 +9,7 @@
             </div>
             <div class="paths collapse show" data-bind='foreach:Object.keys($root.controllers[$data]), attr: {id: "collapse" + $data, "aria-labelledby": "heading" + $data}'>                
                 <div class="path card-body" data-bind="foreach:Object.keys($root.controllers[$parent][$data])">
-                    <div class="method" data-bind='template: {name:"method-template", data: $root.controllers[$parents[1]][$parent][$data]}'></div>
+                    <div class="method" data-bind='template: {name:"method-template", data: $root.controllers[$parents[1]][$parent][$data]}, css: {ispost : $data=="post"}'></div>
                 </div>
             </div>
         </div>
@@ -32,14 +32,18 @@
 </div>
 
 <script type="text/html" id="method-template">
-    <h4 data-bind='text:$parents[1] + " (" + $parent + ")"' class="path-hdr"></h4>
+    <h4 data-bind='text:$parents[1] + " (" + $parent + ")", css: {deprecated: $data.deprecated, ispost: $parent=="post"}' class="path-hdr" ></h4>
+    <!--ko if: $data.deprecated-->
+    <span class="deprecated-text bg-dark text-warning">Deprecated!</span>
+    <!--/ko-->
+    <!--ko ifnot: $data.deprecated-->
     <p data-bind="text:$data.summary, visible:$data.summary" class="summary small"></p>
-    
+    <!--/ko-->
     <div class="parameters-and-return-types">
         <!--ko if: $data.parameters && $data.parameters.length-->
         <div class="parameters" data-bind='visible:$data.parameters.length, template: {name:"parameters-template" ,data: $data.parameters}'></div>
         <!--/ko-->
-        <!--ko if: $data.hasReturnSchema()-->
+        <!--ko if: $data.has200Return()-->
         <div class="returns">
             <h5 class="return-hdr">Returns:</h5>
 
@@ -63,47 +67,61 @@
     <h5 class="parameters-hdr">Input parameters<span data-bind='text:$data.length? " (" + $data.length + ")" : ""'></span>:</h5>
     <ul class="parameters-list" data-bind="foreach:$data">
         <li>
-            <span data-bind='text:name, css: {required: required, queryparameter:$data.in==="query"}' class="param-name"></span>,
-            <!--ko if: $data["type"]-->
-            <span data-bind='text:type' class="param-type"></span>
-            <!--/ko-->
-            <!--ko if: !$data["type"]-->
-            <span class="param-type">Payload</span>
-            <!--/ko-->
-            <span data-bind='text: "(" + $data["format"] + ")", visible: $data["format"]' class="param-format"></span>
-            <!--ko if: $data["description"]-->
-            (<span data-bind='text:description' class="parameter-description"></span>)
+            <!--ko template: {name: "parameter-template"} -->
             <!--/ko-->
         </li>
-    </ul>
-</script>
+        </ul>
+    </script>
 
-<script type="text/html" id="definitions-table-template">
-    <table class="definitions-table">
-        <tbody data-bind="foreach: Object.keys($data)">
-            <tr>
-                <!-- ko template: {name: "definitions-table-row-template", data: $parent[$data]} -->
-                <!--/ko-->
-            </tr>
-        </tbody>
-    </table>
-</script>
-<script type="text/html" id="definitions-table-row-template">
-    <td class="property-name">
-        <!--ko if: $data.typeReference() && $root.typeRefIsInTypelist($data.typeReference())-->
-        <a data-bind='text:$data.name + ($data.isArray()? " (array)" : ""), attr: {href: $data.typeReference()}'></a>
-        <!--/ko-->
-        <!--ko ifnot: $data.typeReference() && $root.typeRefIsInTypelist($data.typeReference())-->
-        <span data-bind='text:$data.name + ($data.isArray()? " (array)" : "")'></span>
-        <!--/ko-->
-    </td>
-    <td class="property-description" data-bind='{css: $data.typeReference()? "subtype": ""}'>
+<script type="text/html" id="parameter-template">
+    <span data-bind='text:name, css: {required: required, queryparameter:$data.in==="query"}' class="param-name"></span>:
+    <!--ko if: $data["type"]-->
+        <!--<span data-bind='text:type' class="param-type"></span>-->
+    <!--/ko-->
+    <!--ko ifnot: $data["type"]-->
         <!--ko if: $data.typeReference()-->
-            <!--ko template: {name: "definitions-table-template", data: $root.definitions[$data.typeReference().replace("#/definitions/","")].properties} -->
-            <!--/ko-->
+            <a data-bind='attr: {href: typeReference()}, text:typeReference().replace("#/definitions/","")'></a>
         <!--/ko-->
         <!--ko ifnot: $data.typeReference()-->
-            <span class="typedescr" data-bind='text:$data.typeDescr()'></span> <span class="type-extra-descr" data-bind='text:$data.extraDescr'></span>
+            <span class="param-type">Payload object</span>
         <!--/ko-->
-    </td>  
+    <!--/ko-->
+    <!--ko if: $data["type"] && $data.extraDescr != $data["type"]-->
+        <span class="param-type" data-bind='text: $data["type"]'></span>
+    <!--/ko-->
+    <span class="param-type" data-bind="text: $data.extraDescr"></span>
+    <!--ko if: $data["description"] && $data["description"] !== $data.extraDescr -->
+        (<span data-bind='text:description' class="parameter-description"></span>)
+    <!--/ko-->
 </script>
+
+
+    <script type="text/html" id="definitions-table-template">
+        <table class="definitions-table">
+            <tbody data-bind="foreach: Object.keys($data)">
+                <tr>
+                    <!-- ko template: {name: "definitions-table-row-template", data: $parent[$data]} -->
+                    <!--/ko-->
+                </tr>
+            </tbody>
+        </table>
+    </script>
+    <script type="text/html" id="definitions-table-row-template">
+        <td class="property-name">
+            <!--ko if: $data.typeReference() && $root.typeRefIsInTypelist($data.typeReference())-->
+            <a data-bind='text:$data.name + ($data.isArray()? " (array)" : ""), attr: {href: $data.typeReference()}'></a>
+            <!--/ko-->
+            <!--ko ifnot: $data.typeReference() && $root.typeRefIsInTypelist($data.typeReference())-->
+            <span data-bind='text:$data.name + ($data.isArray()? " (array)" : "")'></span>
+            <!--/ko-->
+        </td>
+        <td class="property-description" data-bind='{css: $data.typeReference()? "subtype": ""}'>
+            <!--ko if: $data.typeReference()-->
+                <!--ko template: {name: "definitions-table-template", data: $root.definitions[$data.typeReference().replace("#/definitions/","")].properties} -->
+                <!--/ko-->
+            <!--/ko-->
+            <!--ko ifnot: $data.typeReference()-->
+                <span class="typedescr" data-bind='text:$data.typeDescr()'></span> <span class="type-extra-descr" data-bind='text:$data.extraDescr'></span>
+            <!--/ko-->
+        </td>
+    </script>
